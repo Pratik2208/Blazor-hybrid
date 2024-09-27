@@ -1,0 +1,189 @@
+﻿@page "/home"
+@using System.ComponentModel
+@inject INoteService noteService
+@inject NavigationManager navManager
+@inject IPlatformService platform
+@inject IAlertService alertService
+@inject AppState AppState
+@attribute [Authorize]
+
+@if (!platform.IsBrowser)
+{
+    <div class="row maui-navbar text-white">
+        <div class="col-10 fs-1">
+            <h5>Welcome Pratik Panchal</h5>
+        </div>
+        <div class="col-2 mb-2">
+            <NavLink href="/save" class="btn btn-default text-white fs-1">+</NavLink>
+        </div>
+    </div>
+}
+
+<div class="page">
+    <div class="container-fluid">
+        <div class="col-12">
+            <div class="mt-3 d-flex justify-content-between align-items-end @(platform.IsBrowser ? "col-10" : "")">
+                <h2 class="@(platform.IsBrowser ? "text-white" : "text-dark")">All Notes</h2>
+                @if (platform.IsBrowser)
+                {
+                    <div class="mt-2">
+                        <NavLink href="/save" class="btn btn-default text-white fs-2">+</NavLink>
+                    </div>
+                }
+                <div class="filter-btns">
+                    <button type="button" class="btn btn-default" @onclick="@(() => Toggle("col-6"))">
+                        <i class="bx bx-sm bx-grid-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-default" @onclick="@(() => Toggle("col-12"))">
+                        <i class="bx bx-sm bx-menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr class="text-white mb-0" />
+    </div>
+
+    @if (isFetching)
+    {
+        <LoadingComponent LoadingText="Fetching Notes...." />
+    }
+    else
+    {
+        @if (!notes.Any())
+        {
+            <div class="empty-notes-box-wrapper @(platform.IsBrowser ? "mt-5" : "mt-0")">
+                <NavLink href="/save" class="text-center box add-note-btn text-decoration-none d-flex flex-column justify-content-center align-items-center">
+                    <span class="icon fs-1">+</span>
+                    <label class="label">Add Note</label>
+                </NavLink>
+            </div>
+        }
+        else
+        {
+            <div class="container-fluid mt-3">
+                <div class="row">
+                    @foreach (var note in notes)
+                    {
+                        <div class="@colClass col-sm-6 col-md-3 col-gap-y">
+                            <div class="box">
+                                <div>
+                                    <h6 class="m-0 text-truncate">@note.Title</h6>
+                                    <hr />
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div>
+                                        @if (!string.IsNullOrWhiteSpace(note.Description))
+                                        {
+                                            <p style="font-size: 14px;">@note.Description</p>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <hr />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small style="font-size: 12px;">
+                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAkVJREFUSEu11UnIT1EYBvDfJxkixc4QYkERUpQSVjIkmS1QSpKIhSyQIawkGUsSocRCMkZZyLCTKZKZLGwUKUOE89b56u+6//v30Xc293bve87zDs/znCatvJpa+XyNANpjBiZgKPriJ17iDi7iFL7VS7QKYCL25UOrCn2KJbhSFlQPYGPKdEPe8BoncB5387dhmILZ6JW/rcL2IkgZQPPhHzEPZ3NbyhJsg1k4hI5YgV21gUWAyOoMPqeMR6TND/6SBCNxAwE4Fteb99UCdMZjdMd8HCs5PAYcq6zyldiBR2nwQ5oHXxu4FHtTXx9icJ22VAG0y+yKBKfhdDGTCwjmLMtAZd2pAoj4rViDA1hcBHiTfvREfzyv0/tGAKNxDbfTLIcXAT5lJgQbvjQACMG9Konphnd4j65FgKBlDLoL4r1svcjCi+cYRNW1K/Z+yPvj/Tc2xPQHZAbcrwMQLQw69skDHZVU/LYmNtpyKxNlUBHgeKLYXKzGtgr+h3Kvol+qYBEO1sSuw+Y0x6NpjguKAMH9I3iCgfhRARKVzEx93lkT0zbp5xl6Yw5OFgFiuNGmCFiYen24AqDs1/JsEyHWENrXMkWOx6V/sIqwlZvZKsZlqtaV/FpsyWwIsztXUUl4T7QjhNUpUTSq2FMbX8+u1yeGbcqBQcmw61D6PYQlhJVMzU7aI9tKOOnuYjJVF87kZHz7s7qrxhEXTrApmPXHanRldkhZT8ekPLjgf9hFsCX4fjmb2vd6GTQCaCGRWl7BfwP8ApYabxnCPAebAAAAAElFTkSuQmCC" />
+                                            <small>@(note.ModifiedOn.HasValue ? note.ModifiedOn.Value.ToString("dd-MM-yyyy hh:mm") : note.CreatedOn.ToString("dd-MM-yyyy hh:mm"))</small>
+                                        </small>
+                                        @if (platform.IsBrowser)
+                                        {
+                                            <div>
+                                                <NavLink class="btn btn-sm btn-primary" @onclick="() => GoToEditNotePage(note.Id)">
+                                                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAWdJREFUSEvFlLlKRDEUhr9pLOwEcQoFwUJRcasVt9Z3EsX38QnGfXkDC/cFRRQLtXCpND+cyJ0xud7ccZg0uWSG7zv5c5IKLR6VFvNpRtABLAGdwDrwHiq2rKAL2AQmDXoJzAM3jZIyAsG3gAngHngFhux7CnjISlIF3cCGi2QcOAMWgQ+gZmurDr5SVtDjYtgGhg1wbrF8mnQMWAOWywiqFovgj8AzMAjcAm/2rXVJNP+MIhEJfggMAHfucGeBFxfPLjBiJL9+kXrIjfBp4BrIdpHgfv1Xp+btoNeq9JVn4XvAqMnmbA7e2ZhA8AOg32KJwbWuHURHSCDozn/AZQ0JrgyuWbdTmav/dXPVJaeugIW/KvdbCgm+7Mc+gwiu/lfmJ9ZFdbc1NSIvkFzwfXsKjt1d0IEWhsci8oJsYYLPAE+pz3teRJ51ZGeRDI/tILXI3P8XeSqaEhaJKFVQx2yLILXi9p7BNyiKUBlj03X8AAAAAElFTkSuQmCC" />
+                                                </NavLink>
+                                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => DeleteNoteAsync(note.Id)">
+                                                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAKRJREFUSEvtlUEKgCAQRV93CYK6TsdpGXSZrlPQaYpAXVjDt8xd7mR03v8z6FQUXlXh/ChAD4xAYwjZgAGYLaEKsACtcLkC3VvA7i5aQlRclkglUPELwF/I7X1wHFsvDvDKpfXIonn+dfO+BsQK1T7wUx2ohNkl+gGXd/W0JH8P5NeUXSJFeAxIGTQx9HbwWC/5HJUTUCvpLm6OTjUyE/Pbx4oDDlBhOBmYaWrOAAAAAElFTkSuQmCC" />
+                                                </button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn-xs btn" @onclick="() => ShowNoteActions(note.Id)">
+                                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAHlJREFUSEvt1MEJwkAQheFv6xCEYEE2k4sdhBSUckTBIrxFhNwC2V3ZOblzHt4b/nm8JHhSsL7/MrhiwooRSwneGkQvnDbROy6tDZ44b6IPDK0NvohmvHGLQFRy8G6n5gfhBj1FWcQ9RUWIehcdYuopyqbop4XwNv0AggQeGVLrRf0AAAAASUVORK5CYII=" />
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+
+    private const string RefreshView = "RefreshView";
+
+    private bool isFetching;
+
+    private IEnumerable<Note> notes = Enumerable.Empty<Note>();
+
+    private string colClass = "col-6";
+
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadNotesAsync();
+        if (!platform.IsBrowser)
+        {
+            AppState.PropertyChanged += OnRefreshing;
+        }
+    }
+
+    private async void OnRefreshing(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RefreshView))
+        {
+            await LoadNotesAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadNotesAsync()
+    {
+        isFetching = true;
+        notes = await noteService.GetNotesAsync(1, 6);
+        isFetching = false;
+    }
+
+    private void GoToEditNotePage(Guid id) => navManager.NavigateTo($"/save/{id}");
+
+    private void Toggle(string btnClass)
+    {
+        if (colClass != btnClass)
+        {
+            colClass = btnClass;
+        }
+    }
+
+    private async Task ShowNoteActions(Guid id)
+    {
+        if (!platform.IsBrowser)
+        {
+            var action = await platform.ChooseFromOptions("Note Actions", "Delete", "Edit");
+            if (action is not null)
+            {
+                switch (action)
+                {
+                    case "Delete":
+                        await DeleteNoteAsync(id);
+                        break;
+                    case "Edit":
+                        navManager.NavigateTo($"/save/{id}");
+                        return;
+                }
+            }
+        }
+    }
+
+    private async Task DeleteNoteAsync(Guid noteId)
+    {
+        if (await alertService.ConfirmAsync("Want to Delete this Note?", "Confirm Delete?", "Yes", "No"))
+        {
+            await noteService.DeleteNoteAsync(noteId);
+            await LoadNotesAsync();
+        }
+    }
+}

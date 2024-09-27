@@ -1,0 +1,11 @@
+﻿<div class="d-flex justify-content-center align-items-center mt-5">
+    <div class="d-flex flex-column justify-content-center align-items-center shadow-lg p-3">
+        <div class="spinner-grow text-dark"></div>
+        <p>@LoadingText</p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string LoadingText { get; set; } = "Loading...";
+}

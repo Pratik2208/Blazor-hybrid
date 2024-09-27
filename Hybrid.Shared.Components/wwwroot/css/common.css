@@ -1,0 +1,99 @@
+﻿:root {
+    --color-main: #531064;
+    --color-main-light: #e8c7f0;
+    --color-main-lighter: #f9d3ff;
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('../fonts/Poppins-Regular.ttf') format('truetype');
+}
+
+html, body {
+    font-family: Ubuntu, Arial, Helvetica, sans-serif
+}
+
+body {
+    background-color: var(--color-main);
+}
+
+.bg-main {
+    background-color: var(--color-main) !important;
+}
+
+.bg-main-light {
+    background-color: var(--color-main-light) !important;
+}
+
+.bg-main-lighter {
+    background-color: var(--color-main-lighter) !important;
+}
+
+.empty-notes-box-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.box {
+    background-color: var(--color-main-light);
+    box-shadow: 0 0 5px white;
+    padding: 8px 16px;
+    height: 270px;
+    overflow-y: auto;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all ease-in 0.3s;
+}
+
+    .box:hover {
+        box-shadow: 0 0 10px white;
+        border-radius: 0;
+    }
+
+.empty-notes-box-wrapper .box {
+    height: 250px;
+    width: 250px;
+}
+
+.add-note-btn {
+    cursor: pointer;
+    color: black;
+    transition: all ease-in 0.3s;
+}
+
+    .add-note-btn > .icon {
+        font-size: 55px;
+        font-weight: bold;
+        padding: 0;
+        opacity: 0.6;
+    }
+
+    .add-note-btn > .label {
+        font-size: 25px;
+        opacity: 0.6;
+    }
+
+    .add-note-btn:hover > .label, .add-note-btn:hover > .icon {
+        opacity: 1;
+        color: black;
+    }
+
+.btn-xs {
+    padding: .2rem .25rem;
+    font-size: .6rem;
+    border-radius: .15rem;
+}
+
+.col-gap-y {
+    margin-top: var(--bs-gutter-x);
+}
+
+/*.custom-btn {
+    max-width: 40px;
+}*/

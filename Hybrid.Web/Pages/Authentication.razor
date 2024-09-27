@@ -1,0 +1,19 @@
+﻿@page "/authentication/{action}"
+@inject IStorageService storageService
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+<RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="() => DoWhenLoginSucceed()"/>
+
+@code{
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authState { get; set; }
+
+    [Parameter] public string? Action { get; set; }
+
+    private async Task DoWhenLoginSucceed()
+    {
+        var authenticationState = await authState!;
+        var user = authenticationState.User;
+        await storageService.SaveAsync("UserName", user.Identity.Name);
+    }
+}

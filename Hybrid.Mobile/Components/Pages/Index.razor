@@ -1,0 +1,44 @@
+﻿@page "/"
+@layout EmptyLayout
+@inject NavigationManager navManager
+@inject IStorageService storageService
+@inject ILoginService loginService
+@inject AuthenticationStateProvider authProvider
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        //SecureStorage.Default.RemoveAll();
+        if(await storageService.GetAsync("Token") == null || await IsTokenExpired())
+        {
+            await DoLogin();
+            await SetCustomAuthState();
+            navManager.NavigateTo("/home");
+        }
+        else
+        {
+            await SetCustomAuthState();
+            navManager.NavigateTo("/home");
+        }
+    }
+
+    private async Task DoLogin() => await loginService.Login();
+
+    private async Task SetCustomAuthState() 
+    {
+        var customAuthProvider = (CustomAuthenticationStateProvider)authProvider;
+        await customAuthProvider.UpdateAuthenticationState();
+    }
+
+    private async Task<bool> IsTokenExpired()
+    {
+        var tokenExpirationTime = await storageService.GetAsync("Exp-time");
+        if(tokenExpirationTime == null || tokenExpirationTime == string.Empty)
+        {
+            return true;
+        }
+        DateTime expirationTime = JwtTokenHelper.GetTokenExpiryTime(tokenExpirationTime!);
+        return expirationTime <= DateTime.Now.ToLocalTime();
+    }
+}
+

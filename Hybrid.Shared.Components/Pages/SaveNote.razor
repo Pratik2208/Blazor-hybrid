@@ -1,0 +1,133 @@
+﻿@page "/save"
+@page "/save/{id:guid}"
+@inject INoteService noteService
+@inject NavigationManager navManager
+@inject IPlatformService platform
+@attribute [Authorize]
+
+<EditForm Model="model" OnValidSubmit="SaveNoteAsync">
+    <DataAnnotationsValidator />
+    @if (!platform.IsBrowser)
+    {
+        <div class="maui-navbar text-white">
+            <NavLink href="/home" class="text-white text-decoration-none m-0 p-0">
+                <i class="bx bx-x bx-sm"></i>
+            </NavLink>
+            <h5 class="m-0">Save Note</h5>
+            @if (_busy)
+            {
+                <button type="button" class="btn btn-default text-white">
+                    <span class="spinner-border spinner-border-sm">
+                    </span>
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-default text-white" @onclick="SaveNoteAsync">
+                    <i class="bx bx-check bx-sm"></i>
+                </button>
+            }
+        </div>
+    }
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <div class="col-xxl-5 col-xl-6 col-md-8 col-sm-10 @(platform.IsBrowser ? "mx-auto my-auto" : "mt-3")">
+                <SaveNoteInner>
+                    <ChildContent>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <InputText @bind-Value="model.Title" class="form-control border-0 rounded-0 fs-4 bg-main-lighter" placeholder="Enter title" />
+                                <label>Note title...</label>
+                            </div>
+                            <small class="d-block text-danger">
+                                <ValidationMessage For="() => model.Title" />
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                <InputTextArea @bind-Value="model.Description" class="form-control border-0 rounded-0 fs-5 bg-main-lighter border-bottom" rows="5" style="min-height: 250px" placeholder="Enter description" />
+                                <label>Note description...</label>
+                            </div>
+                            <small class="d-block text-danger">
+                                <ValidationMessage For="() => model.Description" />
+                            </small>
+                        </div>
+                    </ChildContent>
+                    <ChildFooterContent>
+                        @if (!platform.IsBrowser)
+                        {
+
+                            <div class="mb-3 d-grid">
+                                @if (_busy)
+                                {
+                                    <button type="button" class="btn btn-primary bg-main disabled" disabled>
+                                        <span class="spinner-border spinner-border-sm">
+                                        </span>
+                                        Saving....
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary bg-main">Save</button>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            @if (_busy)
+                            {
+                                <NavLink href="/home" class="btn btn-default btn-sm disabled" disabled>Cancel</NavLink>
+                                <button type="button" class="add-note-btn btn-success btn-sm" disabled>
+                                    <span class="spinner-border spinner-border-sm">
+                                    </span>
+                                    Saving....
+                                </button>
+                            }
+                            else
+                            {
+                                <NavLink href="/home" class="btn btn-default btn-sm">Cancel</NavLink>
+                                <button type="submit" class="add-note-btn btn-success btn-sm">
+                                    Save
+                                </button>
+                            }
+                        }
+                    </ChildFooterContent>
+                </SaveNoteInner>
+            </div>
+        </div>
+    </div>
+
+</EditForm>
+
+
+@code {
+    private Note model = new();
+    private bool _busy;
+
+    [Parameter]
+    public Guid id{ get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(id != Guid.Empty)
+        {
+            model = await noteService.GetNoteAsync(id);
+        }
+    }
+
+    private async Task SaveNoteAsync()
+    {
+        _busy = true;
+        if(id == Guid.Empty)
+        {
+            await noteService.SaveNote(model, false);
+        }
+        else
+        {
+            await noteService.SaveNote(model, true);
+        }
+        _busy = false;
+        navManager.NavigateTo("/home");
+    }
+}
