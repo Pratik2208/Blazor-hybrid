@@ -1,0 +1,48 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - '**'
+
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install SonarScanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+
+      - name: Sonar Begin
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+
+          dotnet-sonarscanner begin \
+            /k:"YOUR_PROJECT_KEY" \
+            /d:sonar.host.url="https://pentium-domains-communist-earlier.trycloudflare.com" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build
+        run: dotnet build
+
+      - name: Sonar End
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+
+          dotnet-sonarscanner end \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
